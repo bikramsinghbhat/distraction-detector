@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Distraction Detector</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #1a1a2e;
+            padding: 20px 40px;
+            border-bottom: 2px solid #e94560;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-size: 22px;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        header span {
+            font-size: 13px;
+            color: #a0a0b0;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            padding: 30px 40px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .video-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #2a2a3e;
+            background: #1a1a2e;
+        }
+
+        .video-wrapper img {
+            width: 100%;
+            display: block;
+        }
+
+        .status-bar {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px 24px;
+            border: 2px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            flex-shrink: 0;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .status-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .chart-section {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #2a2a3e;
+        }
+
+        .chart-section h3 {
+            font-size: 14px;
+            color: #a0a0b0;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .stats-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #2a2a3e;
+        }
+
+        .stats-card h3 {
+            font-size: 13px;
+            color: #a0a0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #2a2a3e;
+        }
+
+        .stat-item:last-child { border-bottom: none; }
+
+        .stat-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .stat-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .alert-box {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #2a2a3e;
+        }
+
+        .alert-box h3 {
+            font-size: 13px;
+            color: #a0a0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .alert-item {
+            background: #0f0f1a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            border-left: 3px solid #e94560;
+            color: #d0d0e0;
+        }
+
+        .alert-item.phone { border-left-color: #4da6ff; }
+        .alert-item.drowsy { border-left-color: #ff6b6b; }
+        .alert-item.distracted { border-left-color: #ffa500; }
+
+        .timer-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #2a2a3e;
+            text-align: center;
+        }
+
+        .timer-card h3 {
+            font-size: 13px;
+            color: #a0a0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            font-size: 36px;
+            font-weight: 700;
+            color: #00ff88;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎓 Student Distraction Detector</h1>
+    <span>Kyungdong University Global — Smart Computing</span>
+</header>
+
+<div class="main">
+    <div class="video-section">
+        <div class="video-wrapper">
+            <img src="/video_feed" alt="Live Feed">
+        </div>
+
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <div class="status-text" id="statusText">Connecting...</div>
+        </div>
+
+        <div class="chart-section">
+            <h3>📈 Attention Timeline</h3>
+            <canvas id="attentionChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="timer-card">
+            <h3>⏱ Session Duration</h3>
+            <div class="timer" id="timer">00:00:00</div>
+        </div>
+
+        <div class="stats-card">
+            <h3>📊 Session Stats</h3>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <div class="stat-dot" style="background:#00ff88"></div>
+                    Focused
+                </div>
+                <div class="stat-value" id="focusedCount">0%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <div class="stat-dot" style="background:#ffa500"></div>
+                    Distracted
+                </div>
+                <div class="stat-value" id="distractedCount">0%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <div class="stat-dot" style="background:#ff6b6b"></div>
+                    Drowsy
+                </div>
+                <div class="stat-value" id="drowsyCount">0%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <div class="stat-dot" style="background:#4da6ff"></div>
+                    Phone Use
+                </div>
+                <div class="stat-value" id="phoneCount">0%</div>
+            </div>
+        </div>
+
+        <div class="alert-box">
+            <h3>🔔 Recent Alerts</h3>
+            <div id="alertList">
+                <div class="alert-item">Session started — monitoring active</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Chart Setup ---
+    const ctx = document.getElementById('attentionChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Attention State',
+                data: [],
+                borderColor: '#00ff88',
+                backgroundColor: 'rgba(0,255,136,0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    min: 0, max: 3,
+                    ticks: {
+                        color: '#a0a0b0',
+                        callback: v => ['Focused','Distracted','Drowsy','Phone'][v] || ''
+                    },
+                    grid: { color: '#2a2a3e' }
+                },
+                x: {
+                    ticks: { color: '#a0a0b0', maxTicksLimit: 6 },
+                    grid: { color: '#2a2a3e' }
+                }
+            },
+            plugins: { legend: { display: false } },
+            animation: { duration: 0 }
+        }
+    });
+
+    // --- Stats Tracking ---
+    let counts = { focused: 0, distracted: 0, drowsy: 0, phone: 0, total: 0 };
+    let lastStatus = '';
+    let seconds = 0;
+
+    // --- Timer ---
+    setInterval(() => {
+        seconds++;
+        const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        document.getElementById('timer').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+
+    // --- Status Polling ---
+    function getStatusValue(s) {
+        if (s.includes('Focused')) return 0;
+        if (s.includes('DISTRACTED')) return 1;
+        if (s.includes('DROWSY')) return 2;
+        if (s.includes('PHONE')) return 3;
+        return 0;
+    }
+
+    function updateStatus() {
+        fetch('/status')
+            .then(r => r.json())
+            .then(data => {
+                const status = data.status;
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+
+                text.textContent = status;
+
+                if (status.includes('Focused')) {
+                    dot.style.background = '#00ff88';
+                    dot.style.boxShadow = '0 0 10px #00ff88';
+                    counts.focused++;
+                } else if (status.includes('DISTRACTED')) {
+                    dot.style.background = '#ffa500';
+                    dot.style.boxShadow = '0 0 10px #ffa500';
+                    counts.distracted++;
+                } else if (status.includes('DROWSY')) {
+                    dot.style.background = '#ff6b6b';
+                    dot.style.boxShadow = '0 0 10px #ff6b6b';
+                    counts.drowsy++;
+                } else if (status.includes('PHONE')) {
+                    dot.style.background = '#4da6ff';
+                    dot.style.boxShadow = '0 0 10px #4da6ff';
+                    counts.phone++;
+                }
+
+                counts.total++;
+
+                // Update stats
+                const pct = k => counts.total > 0 ?
+                    Math.round((counts[k] / counts.total) * 100) + '%' : '0%';
+                document.getElementById('focusedCount').textContent = pct('focused');
+                document.getElementById('distractedCount').textContent = pct('distracted');
+                document.getElementById('drowsyCount').textContent = pct('drowsy');
+                document.getElementById('phoneCount').textContent = pct('phone');
+
+                // Update chart
+                const now = new Date().toLocaleTimeString();
+                chart.data.labels.push(now);
+                chart.data.datasets[0].data.push(getStatusValue(status));
+                if (chart.data.labels.length > 60) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.update();
+
+                // Alerts
+                if (status !== lastStatus && !status.includes('Focused') && !status.includes('No Face')) {
+                    const alertList = document.getElementById('alertList');
+                    const div = document.createElement('div');
+                    div.className = 'alert-item ' +
+                        (status.includes('PHONE') ? 'phone' :
+                         status.includes('DROWSY') ? 'drowsy' : 'distracted');
+                    div.textContent = `${new Date().toLocaleTimeString()} — ${status}`;
+                    alertList.insertBefore(div, alertList.firstChild);
+                    if (alertList.children.length > 5) alertList.removeChild(alertList.lastChild);
+                }
+
+                lastStatus = status;
+            });
+    }
+
+    setInterval(updateStatus, 1000);
+</script>
+
+</body>
+</html>
