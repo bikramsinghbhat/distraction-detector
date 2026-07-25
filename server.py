@@ -25,7 +25,7 @@ RIGHT_EYE = [33, 160, 158, 133, 153, 144]
 EAR_THRESHOLD = 0.25
 DROWSY_FRAMES = 20
 YAW_THRESHOLD = 13
-PITCH_THRESHOLD = 13
+PITCH_THRESHOLD = 999  # disabled - looking down is normal study behavior
 frame_counter = 0
 current_status = "Loading..."
 
@@ -61,7 +61,7 @@ def detect_phone(frame):
     for box in results.boxes:
         cls = int(box.cls[0])
         conf = float(box.conf[0])
-        if cls == 67 and conf > 0.4:
+        if cls == 67 and conf > 0.7:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
             cv2.putText(frame, f"Phone {conf:.0%}", (x1, y1 - 10),
@@ -83,8 +83,8 @@ def generate_frames():
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = face_mesh.process(rgb_frame)
 
-        status = "No Face Detected"
-        color = (0, 0, 255)
+        status = "Please face the camera"
+        color = (128, 128, 128)
 
         if phone_detected:
             status = "PHONE DETECTED!"
@@ -96,12 +96,13 @@ def generate_frames():
             avg_EAR = (calculate_EAR(left_eye) + calculate_EAR(right_eye)) / 2.0
             yaw, pitch = get_head_pose(landmarks, w, h)
 
-            if avg_EAR < EAR_THRESHOLD:
+            looking_down = pitch < -10
+            if avg_EAR < EAR_THRESHOLD and not looking_down:
                 frame_counter += 1
                 if frame_counter >= DROWSY_FRAMES:
                     status = "DROWSY!"
                     color = (0, 0, 255)
-            elif abs(yaw) > YAW_THRESHOLD or abs(pitch) > PITCH_THRESHOLD:
+            elif abs(yaw) > YAW_THRESHOLD:
                 frame_counter = 0
                 status = "DISTRACTED!"
                 color = (0, 165, 255)
