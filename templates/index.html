@@ -5,285 +5,492 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Distraction Detection System</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --navy:        #050a2e;
+            --navy-mid:    #0b1547;
+            --navy-card:   #0f1d5c;
+            --navy-border: #1a2d7c;
+            --blue-bright: #2563eb;
+            --blue-glow:   #3b82f6;
+            --blue-light:  #60a5fa;
+            --accent-green:#10b981;
+            --accent-amber:#f59e0b;
+            --accent-red:  #ef4444;
+            --accent-sky:  #38bdf8;
+            --text-primary:#f0f4ff;
+            --text-muted:  #8896c8;
+            --text-dim:    #4a5899;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #090964;
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background: var(--navy);
+            color: var(--text-primary);
             min-height: 100vh;
         }
 
+        /* ── HEADER ── */
         header {
-            background: #0c0c76;
-            padding: 20px 40px;
-            border-bottom: 2px solid #08c71b;
+            background: var(--navy-mid);
+            padding: 0 40px;
+            height: 72px;
+            border-bottom: 1px solid var(--navy-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
         }
 
-        header h1 {
-            font-size: 22px;
-            color: #ffffff;
-            letter-spacing: 1px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
-        header span {
-            font-size: 13px;
-            color: #a0a0b0;
+        .header-badge {
+            background: linear-gradient(135deg, var(--blue-bright), #1d4ed8);
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(37,99,235,0.4);
         }
 
+        .header-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.2px;
+        }
+
+        .header-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .header-logo {
+            height: 70px;
+            opacity: 0.95;
+            filter: drop-shadow(0 0 8px rgba(96,165,250,0.3));
+        }
+
+        /* ── LIVE INDICATOR ── */
+        .live-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-green);
+            letter-spacing: 0.5px;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: livepulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes livepulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* ── MAIN LAYOUT ── */
         .main {
             display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 24px;
-            padding: 30px 40px;
-            max-width: 1300px;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+            padding: 24px 40px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        .video-section {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+        /* ── VIDEO FEED ── */
+        .video-section { display: flex; flex-direction: column; gap: 16px; }
 
         .video-wrapper {
             position: relative;
             border-radius: 16px;
             overflow: hidden;
-            border: 2px solid #151567;
-            background: #161668;
+            border: 1px solid var(--navy-border);
+            background: var(--navy-card);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(37,99,235,0.1);
         }
 
         .video-wrapper img {
             width: 100%;
             display: block;
+            border-radius: 16px;
         }
 
+        .video-overlay {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 10;
+        }
+
+        .cam-label {
+            background: rgba(5,10,46,0.75);
+            border: 1px solid var(--navy-border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            backdrop-filter: blur(8px);
+        }
+
+        /* ── STATUS BAR ── */
         .status-bar {
-            background: #1d1d78;
-            border-radius: 12px;
-            padding: 20px 24px;
-            border: 2px solid #18188a;
+            background: var(--navy-card);
+            border-radius: 14px;
+            padding: 18px 24px;
+            border: 1px solid var(--navy-border);
             display: flex;
             align-items: center;
             gap: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
 
         .status-dot {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            background: #00ff88;
-            box-shadow: 0 0 10px #00ff88;
+            background: var(--accent-green);
+            box-shadow: 0 0 12px var(--accent-green);
             flex-shrink: 0;
-            animation: pulse 1.5s infinite;
+            transition: background 0.3s, box-shadow 0.3s;
+            animation: pulse 1.8s ease-in-out infinite;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-right: 4px;
         }
 
         .status-text {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 700;
-            letter-spacing: 1px;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+            transition: color 0.3s;
         }
 
+        /* ── CHART ── */
         .chart-section {
-            background: #1d1d78;
-            border-radius: 12px;
-            padding: 20px;
-            border: 2px solid #151592;
+            background: var(--navy-card);
+            border-radius: 14px;
+            padding: 20px 24px;
+            border: 1px solid var(--navy-border);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
 
-        .chart-section h3 {
-            font-size: 14px;
-            color: #a0a0b0;
-            margin-bottom: 16px;
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .sidebar {
+            margin-bottom: 16px;
             display: flex;
-            flex-direction: column;
-            gap: 16px;
+            align-items: center;
+            gap: 8px;
         }
 
-        .stats-card {
-            background: #1d1d78;
-            border-radius: 12px;
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 14px;
+            background: var(--blue-bright);
+            border-radius: 2px;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+        .card {
+            background: var(--navy-card);
+            border-radius: 14px;
             padding: 20px;
-            border: 2px solid #11117d;
+            border: 1px solid var(--navy-border);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
         }
 
-        .stats-card h3 {
-            font-size: 13px;
-            color: #a0a0b0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
+        /* ── TIMER ── */
+        .timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 34px;
+            font-weight: 600;
+            color: var(--accent-green);
+            letter-spacing: 2px;
+            text-align: center;
+            margin-top: 8px;
+            text-shadow: 0 0 20px rgba(16,185,129,0.4);
         }
 
-        .stat-item {
+        /* ── STATS ── */
+        .stat-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #2a2a9c;
+            padding: 11px 0;
+            border-bottom: 1px solid rgba(26,45,124,0.6);
         }
 
-        .stat-item:last-child { border-bottom: none; }
+        .stat-row:last-child { border-bottom: none; }
 
-        .stat-label {
+        .stat-left {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 14px;
+            font-weight: 400;
+            color: var(--text-primary);
         }
 
-        .stat-dot {
-            width: 10px;
-            height: 10px;
+        .stat-pip {
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
-        .stat-value {
-            font-size: 18px;
+        .stat-pct {
+            font-size: 17px;
             font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
         }
 
-        .alert-box {
-            background: #1d1d78;
-            border-radius: 12px;
-            padding: 20px;
-            border: 2px solid #0f0f76;
-        }
-
-        .alert-box h3 {
-            font-size: 13px;
-            color: #a0a0b0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
+        /* ── ALERTS ── */
         .alert-item {
-            background: #1d1d78;
+            background: rgba(5,10,46,0.6);
             border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            border-left: 3px solid #e94560;
-            color: #d0d0e0;
+            padding: 9px 12px;
+            margin-bottom: 7px;
+            font-size: 12px;
+            border-left: 3px solid var(--navy-border);
+            color: var(--text-muted);
+            font-weight: 400;
+            line-height: 1.5;
         }
 
-        .alert-item.phone { border-left-color: #4da6ff; }
-        .alert-item.drowsy { border-left-color: #ff6b6b; }
-        .alert-item.distracted { border-left-color: #ffa500; }
+        .alert-item:last-child { margin-bottom: 0; }
+        .alert-item.phone     { border-left-color: var(--accent-sky); color: var(--accent-sky); }
+        .alert-item.drowsy    { border-left-color: var(--accent-red); color: #fca5a5; }
+        .alert-item.distracted{ border-left-color: var(--accent-amber); color: #fcd34d; }
 
-        .timer-card {
-            background: #18188e;
-            border-radius: 12px;
-            padding: 20px;
-            border: 2px solid #121277;
-            text-align: center;
+        /* ── DETECTION LEGEND ── */
+        .legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 4px;
         }
 
-        .timer-card h3 {
-            font-size: 13px;
-            color: #a0a0b0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(5,10,46,0.5);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid var(--navy-border);
         }
 
-        .timer {
-            font-size: 36px;
-            font-weight: 700;
-            color: #00ff88;
-            letter-spacing: 2px;
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--navy); }
+        ::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 3px; }
     </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
-    <h1>🎓 Student Distraction Detection System</h1>
-    <img src="/static/kdu logo4.png" alt="KDU Logo" style="height:60px;">
+    <div class="header-left">
+        <div class="header-badge">🎓</div>
+        <div>
+            <div class="header-title">Student Distraction Detection System</div>
+            <div class="header-sub">Real-time behavioral monitoring powered by YOLOv8 & MediaPipe</div>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:20px;">
+        <div class="live-pill">
+            <div class="live-dot"></div>
+            LIVE
+        </div>
+        <img src="/static/kdu logo4.png" alt="KDU Logo" class="header-logo">
+    </div>
 </header>
 
+<!-- MAIN -->
 <div class="main">
+
+    <!-- LEFT: VIDEO + STATUS + CHART -->
     <div class="video-section">
+
         <div class="video-wrapper">
-            <img src="/video_feed" alt="Live Feed">
+            <img src="/video_feed" alt="Live webcam feed">
+            <div class="video-overlay">
+                <div class="cam-label">CAM · LIVE</div>
+            </div>
         </div>
 
         <div class="status-bar">
             <div class="status-dot" id="statusDot"></div>
+            <span class="status-label">Status</span>
             <div class="status-text" id="statusText">Connecting...</div>
         </div>
 
         <div class="chart-section">
-            <h3>📈 Attention Timeline</h3>
-            <canvas id="attentionChart" height="100"></canvas>
-        </div>
-    </div>
-
-    <div class="sidebar">
-        <div class="timer-card">
-            <h3>⏱ Session Duration</h3>
-            <div class="timer" id="timer">00:00:00</div>
+            <div class="section-title">Attention Timeline</div>
+            <canvas id="attentionChart" height="90"></canvas>
         </div>
 
-        <div class="stats-card">
-            <h3>📊 Session Stats</h3>
-            <div class="stat-item">
-                <div class="stat-label">
-                    <div class="stat-dot" style="background:#00ff88"></div>
+        <!-- Detection legend -->
+        <div class="card" style="padding:16px 20px;">
+            <div class="section-title" style="margin-bottom:12px;">Detection States</div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--accent-green);box-shadow:0 0 6px var(--accent-green);"></div>
                     Focused
                 </div>
-                <div class="stat-value" id="focusedCount">0%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">
-                    <div class="stat-dot" style="background:#ffa500"></div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--accent-amber);box-shadow:0 0 6px var(--accent-amber);"></div>
                     Distracted
                 </div>
-                <div class="stat-value" id="distractedCount">0%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">
-                    <div class="stat-dot" style="background:#ff6b6b"></div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--accent-red);box-shadow:0 0 6px var(--accent-red);"></div>
                     Drowsy
                 </div>
-                <div class="stat-value" id="drowsyCount">0%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">
-                    <div class="stat-dot" style="background:#4da6ff"></div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--accent-sky);box-shadow:0 0 6px var(--accent-sky);"></div>
                     Phone Use
                 </div>
-                <div class="stat-value" id="phoneCount">0%</div>
             </div>
         </div>
 
-        <div class="alert-box">
-            <h3>🔔 Recent Alerts</h3>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="sidebar">
+
+        <!-- Timer -->
+        <div class="card" style="text-align:center;">
+            <div class="section-title" style="justify-content:center;">Session Duration</div>
+            <div class="timer-display" id="timer">00:00:00</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+            <div class="section-title">Session Stats</div>
+            <div class="stat-row">
+                <div class="stat-left">
+                    <div class="stat-pip" style="background:var(--accent-green);box-shadow:0 0 6px var(--accent-green);"></div>
+                    Focused
+                </div>
+                <div class="stat-pct" id="focusedCount">0%</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-left">
+                    <div class="stat-pip" style="background:var(--accent-amber);box-shadow:0 0 6px var(--accent-amber);"></div>
+                    Distracted
+                </div>
+                <div class="stat-pct" id="distractedCount">0%</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-left">
+                    <div class="stat-pip" style="background:var(--accent-red);box-shadow:0 0 6px var(--accent-red);"></div>
+                    Drowsy
+                </div>
+                <div class="stat-pct" id="drowsyCount">0%</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-left">
+                    <div class="stat-pip" style="background:var(--accent-sky);box-shadow:0 0 6px var(--accent-sky);"></div>
+                    Phone Use
+                </div>
+                <div class="stat-pct" id="phoneCount">0%</div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="card" style="flex:1;">
+            <div class="section-title">Recent Alerts</div>
             <div id="alertList">
                 <div class="alert-item">Session started — monitoring active</div>
             </div>
         </div>
+
+        <!-- System info -->
+        <div class="card" style="padding:16px 20px;">
+            <div class="section-title" style="margin-bottom:12px;">System Info</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                    <span style="color:var(--text-muted);">Detection Model</span>
+                    <span style="color:var(--text-primary); font-family:'JetBrains Mono',monospace;">YOLOv8n</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                    <span style="color:var(--text-muted);">Face Analysis</span>
+                    <span style="color:var(--text-primary); font-family:'JetBrains Mono',monospace;">MediaPipe</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                    <span style="color:var(--text-muted);">Backend</span>
+                    <span style="color:var(--text-primary); font-family:'JetBrains Mono',monospace;">Flask · Python 3.12</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                    <span style="color:var(--text-muted);">Accuracy</span>
+                    <span style="color:var(--accent-green); font-family:'JetBrains Mono',monospace; font-weight:600;">91.25%</span>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <script>
-    // --- Chart Setup ---
+    // Chart setup
     const ctx = document.getElementById('attentionChart').getContext('2d');
     const chart = new Chart(ctx, {
         type: 'line',
@@ -292,8 +499,8 @@
             datasets: [{
                 label: 'Attention State',
                 data: [],
-                borderColor: '#00ff88',
-                backgroundColor: 'rgba(0,255,136,0.1)',
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.08)',
                 borderWidth: 2,
                 tension: 0.4,
                 fill: true,
@@ -306,14 +513,17 @@
                 y: {
                     min: 0, max: 3,
                     ticks: {
-                        color: '#a0a0b0',
+                        color: '#ffffff',
+                        font: { size: 11, family: 'Inter' },
                         callback: v => ['Focused','Distracted','Drowsy','Phone'][v] || ''
                     },
-                    grid: { color: '#2a2a3e' }
+                    grid: { color: 'rgba(26,45,124,0.5)' },
+                    border: { color: 'rgba(26,45,124,0.8)' }
                 },
                 x: {
-                    ticks: { color: '#a0a0b0', maxTicksLimit: 6 },
-                    grid: { color: '#2a2a3e' }
+                    ticks: { color: '#ffffff', maxTicksLimit: 6, font: { size: 10 } },
+                    grid: { color: 'rgba(26,45,124,0.3)' },
+                    border: { color: 'rgba(26,45,124,0.8)' }
                 }
             },
             plugins: { legend: { display: false } },
@@ -321,21 +531,20 @@
         }
     });
 
-    // --- Stats Tracking ---
-    let counts = { focused: 0, distracted: 0, drowsy: 0, phone: 0, total: 0 };
+    // State
+    let counts = { focused:0, distracted:0, drowsy:0, phone:0, total:0 };
     let lastStatus = '';
     let seconds = 0;
 
-    // --- Timer ---
+    // Timer
     setInterval(() => {
         seconds++;
-        const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-        const s = String(seconds % 60).padStart(2, '0');
+        const h = String(Math.floor(seconds / 3600)).padStart(2,'0');
+        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2,'0');
+        const s = String(seconds % 60).padStart(2,'0');
         document.getElementById('timer').textContent = `${h}:${m}:${s}`;
     }, 1000);
 
-    // --- Status Polling ---
     function getStatusValue(s) {
         if (s.includes('Focused')) return 0;
         if (s.includes('DISTRACTED')) return 1;
@@ -349,40 +558,46 @@
             .then(r => r.json())
             .then(data => {
                 const status = data.status;
-                const dot = document.getElementById('statusDot');
+                const dot  = document.getElementById('statusDot');
                 const text = document.getElementById('statusText');
 
                 text.textContent = status;
 
                 if (status.includes('Focused')) {
-                    dot.style.background = '#00ff88';
-                    dot.style.boxShadow = '0 0 10px #00ff88';
+                    dot.style.background  = '#10b981';
+                    dot.style.boxShadow   = '0 0 12px #10b981';
+                    text.style.color      = '#10b981';
                     counts.focused++;
                 } else if (status.includes('DISTRACTED')) {
-                    dot.style.background = '#ffa500';
-                    dot.style.boxShadow = '0 0 10px #ffa500';
+                    dot.style.background  = '#f59e0b';
+                    dot.style.boxShadow   = '0 0 12px #f59e0b';
+                    text.style.color      = '#f59e0b';
                     counts.distracted++;
                 } else if (status.includes('DROWSY')) {
-                    dot.style.background = '#ff6b6b';
-                    dot.style.boxShadow = '0 0 10px #ff6b6b';
+                    dot.style.background  = '#ef4444';
+                    dot.style.boxShadow   = '0 0 12px #ef4444';
+                    text.style.color      = '#ef4444';
                     counts.drowsy++;
                 } else if (status.includes('PHONE')) {
-                    dot.style.background = '#4da6ff';
-                    dot.style.boxShadow = '0 0 10px #4da6ff';
+                    dot.style.background  = '#38bdf8';
+                    dot.style.boxShadow   = '0 0 12px #38bdf8';
+                    text.style.color      = '#38bdf8';
                     counts.phone++;
+                } else {
+                    dot.style.background  = '#4a5899';
+                    dot.style.boxShadow   = 'none';
+                    text.style.color      = '#8896c8';
                 }
 
                 counts.total++;
 
-                // Update stats
                 const pct = k => counts.total > 0 ?
                     Math.round((counts[k] / counts.total) * 100) + '%' : '0%';
-                document.getElementById('focusedCount').textContent = pct('focused');
+                document.getElementById('focusedCount').textContent    = pct('focused');
                 document.getElementById('distractedCount').textContent = pct('distracted');
-                document.getElementById('drowsyCount').textContent = pct('drowsy');
-                document.getElementById('phoneCount').textContent = pct('phone');
+                document.getElementById('drowsyCount').textContent     = pct('drowsy');
+                document.getElementById('phoneCount').textContent      = pct('phone');
 
-                // Update chart
                 const now = new Date().toLocaleTimeString();
                 chart.data.labels.push(now);
                 chart.data.datasets[0].data.push(getStatusValue(status));
@@ -390,22 +605,29 @@
                     chart.data.labels.shift();
                     chart.data.datasets[0].data.shift();
                 }
+
+                // Change chart line color based on state
+                const lineColors = {
+                    0: '#10b981', 1: '#f59e0b', 2: '#ef4444', 3: '#38bdf8'
+                };
+                chart.data.datasets[0].borderColor = lineColors[getStatusValue(status)] || '#3b82f6';
                 chart.update();
 
-                // Alerts
-                if (status !== lastStatus && !status.includes('Focused') && !status.includes('No Face')) {
+                if (status !== lastStatus && !status.includes('Focused') && !status.includes('Please face')) {
                     const alertList = document.getElementById('alertList');
                     const div = document.createElement('div');
                     div.className = 'alert-item ' +
-                        (status.includes('PHONE') ? 'phone' :
-                         status.includes('DROWSY') ? 'drowsy' : 'distracted');
+                        (status.includes('PHONE')      ? 'phone'      :
+                         status.includes('DROWSY')     ? 'drowsy'     :
+                         status.includes('DISTRACTED') ? 'distracted' : '');
                     div.textContent = `${new Date().toLocaleTimeString()} — ${status}`;
                     alertList.insertBefore(div, alertList.firstChild);
                     if (alertList.children.length > 5) alertList.removeChild(alertList.lastChild);
                 }
 
                 lastStatus = status;
-            });
+            })
+            .catch(() => {});
     }
 
     setInterval(updateStatus, 1000);

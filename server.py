@@ -84,7 +84,7 @@ def generate_frames():
         results = face_mesh.process(rgb_frame)
 
         status = "Please face the camera"
-        color = (128, 128, 128)
+        color = (0, 0, 0)
 
         if phone_detected:
             status = "PHONE DETECTED!"
