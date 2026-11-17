@@ -480,8 +480,8 @@
                     <span style="color:var(--text-primary); font-family:'JetBrains Mono',monospace;">Flask · Python 3.12</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:12px;">
-                    <span style="color:var(--text-muted);">Accuracy</span>
-                    <span style="color:var(--accent-green); font-family:'JetBrains Mono',monospace; font-weight:600;">91.25%</span>
+                    <span style="color:var(--text-muted);">Test Accuracy</span>
+                    <span style="color:var(--accent-green); font-family:'JetBrains Mono',monospace; font-weight:600;">94.17%</span>
                 </div>
             </div>
         </div>
@@ -589,7 +589,8 @@
                     text.style.color      = '#8896c8';
                 }
 
-                counts.total++;
+                // only count the four real states, so the percentages add up to 100%
+                if (['Focused','DISTRACTED','DROWSY','PHONE'].some(k => status.includes(k))) counts.total++;
 
                 const pct = k => counts.total > 0 ?
                     Math.round((counts[k] / counts.total) * 100) + '%' : '0%';
