@@ -4,7 +4,7 @@ Real-time attention feedback for one student, using a laptop webcam, a pre-train
 and MediaPipe Face Mesh (eye aspect ratio and head yaw). A Flask server streams the annotated video and a JSON
 status to a browser dashboard. Runs on the CPU; no video or images are saved.
 
-Bhat Bikram Singh (ID 2317146), Department of Smart Computing, Kyungdong University Global.
+Bikram Singh Bhat (ID 2317146), Department of Smart Computing, Kyungdong University Global.
 
 ## States
 Focused, Distracted (head turned, |yaw| > 13), Drowsy (EAR < 0.25 for 20 consecutive frames), Phone Use
